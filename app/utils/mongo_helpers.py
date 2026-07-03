@@ -10,7 +10,7 @@ def serialize_document(document):
 def serialize_documents(documents):
     return [serialize_document(document) for document in documents]
 
-def to_object_id(di_value: str):
+def to_object_id(id_value: str):
     try:
         return ObjectId(id_value)
     except Exception:
