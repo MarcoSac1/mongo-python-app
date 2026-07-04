@@ -61,3 +61,9 @@ def search_user_by_city(city: str):
         "data": users
     }  
 
+@router.delete("/{user_id}")
+def delete_user(user_id: str):
+    deleted = user_repository.delete(user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    return {"message": "Utente eliminato"}
