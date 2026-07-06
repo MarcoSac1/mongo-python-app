@@ -2,6 +2,9 @@
 
 ## Descrizione
 
+![CI/CD](https://github.com/MarcoSac1/mongo-python-app/actions/workflows/ci.yml/badge.svg)
+
+
 Mongo-Python-App è un'API REST sviluppata in Python utilizzando FastAPI e MongoDB Atlas.
 
 L'obiettivo del progetto è mostrare come realizzare un backend moderno seguendo un'architettura modulare, mantenendo separate le diverse responsabilità dell'applicazione e rendendo il codice facilmente estendibile e riutilizzabile.
