@@ -57,8 +57,8 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Deploy su EC2 via SSH
-                uses: appleboy/ssh-action@v1
-                with:
+            uses: appleboy/ssh-action@v1
+            with:
                     host: ${{ secrets.EC2_HOST }}
                     username: ${{ secrets.EC2_USER }}
                     key: ${{ secrets.EC2_SSH_KEY }}
