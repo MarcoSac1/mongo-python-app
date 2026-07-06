@@ -3,3 +3,6 @@ python-dotenv
 fastapi
 uvicorn
 pydantic[email]
+pytest
+httpx
+ruff

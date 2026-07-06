@@ -1,7 +1,8 @@
 from fastapi import FastAPI
+
 from app.database import MongoDatabase
-from app.routes.user_routes import router as user_router
 from app.routes.course_routes import router as course_router
+from app.routes.user_routes import router as user_router
 
 app = FastAPI(
     title="MongoDB Atlas Python API",

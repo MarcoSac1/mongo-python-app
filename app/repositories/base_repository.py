@@ -1,9 +1,5 @@
 from app.database import MongoDatabase
-from app.utils.mongo_helpers import (
-    serialize_document,
-    serialize_documents,
-    to_object_id
-)
+from app.utils.mongo_helpers import serialize_document, serialize_documents, to_object_id
 
 
 class BaseRepository:

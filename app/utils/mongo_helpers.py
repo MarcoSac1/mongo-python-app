@@ -1,5 +1,6 @@
 from bson import ObjectId
 
+
 def serialize_document(document):
     if document is None:
         return None
