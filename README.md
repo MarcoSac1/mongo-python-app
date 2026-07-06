@@ -2,20 +2,24 @@
 
 ## Descrizione
 
-Mongo-Python-App è un'API REST sviluppata in Python utilizzando FastAPI e MongoDB Atlas. Il progetto è stato realizzato con un'architettura modulare per mostrare come sviluppare un backend mantenendo separate le responsabilità delle diverse componenti.
+Mongo-Python-App è un'API REST sviluppata in Python utilizzando FastAPI e MongoDB Atlas.
 
-L'applicazione permette di gestire due risorse principali:
+L'obiettivo del progetto è mostrare come realizzare un backend moderno seguendo un'architettura modulare, mantenendo separate le diverse responsabilità dell'applicazione e rendendo il codice facilmente estendibile e riutilizzabile.
+
+L'API permette di gestire due risorse principali:
 
 - Users
 - Courses
 
 Per entrambe sono disponibili le principali operazioni CRUD (Create, Read, Update e Delete).
 
-Il progetto utilizza inoltre il Repository Pattern, così da evitare duplicazioni di codice e rendere facilmente estendibile l'applicazione.
+Il progetto utilizza inoltre il Repository Pattern per centralizzare tutta la logica di accesso al database ed evitare duplicazioni di codice.
 
 ---
 
-# Architettura del progetto
+# Architettura
+
+L'applicazione è organizzata in moduli, in modo che ogni componente abbia un compito ben preciso.
 
 ```
 app/
@@ -41,22 +45,32 @@ app/
     └── mongo_helpers.py
 ```
 
-Ogni cartella ha una responsabilità ben precisa.
+Le responsabilità dei vari moduli sono le seguenti:
 
-- **models** contiene i modelli Pydantic utilizzati per validare i dati ricevuti dalle API.
-- **routes** definisce gli endpoint REST e riceve le richieste HTTP provenienti dal client.
-- **repositories** contiene tutta la logica di accesso al database MongoDB. Il `BaseRepository` implementa le operazioni CRUD generiche, mentre `UserRepository` e `CourseRepository` estendono tali funzionalità per le rispettive collezioni.
-- **database.py** gestisce la connessione con MongoDB Atlas.
-- **config.py** legge le variabili d'ambiente dal file `.env`.
-- **main.py** rappresenta il punto di ingresso dell'applicazione e registra tutti i router.
+- **main.py** rappresenta il punto di ingresso dell'applicazione. Qui viene creata l'istanza di FastAPI e vengono registrati tutti i router.
+
+- **config.py** legge le variabili d'ambiente presenti nel file `.env`, come l'URI di MongoDB e il nome del database.
+
+- **database.py** gestisce la connessione a MongoDB Atlas e fornisce un'unica istanza del database a tutta l'applicazione.
+
+- **models/** contiene i modelli Pydantic utilizzati per validare automaticamente i dati ricevuti dalle richieste HTTP.
+
+- **routes/** definisce gli endpoint REST. Ogni route riceve una richiesta HTTP e la inoltra al repository appropriato.
+
+- **repositories/** contiene la logica di accesso al database. Il `BaseRepository` implementa tutte le operazioni CRUD comuni, mentre `UserRepository` e `CourseRepository` ereditano queste funzionalità aggiungendo solamente la logica specifica della propria collezione.
+
+- **utils/** contiene funzioni di supporto utilizzate in più parti del progetto, come la conversione dei documenti MongoDB in oggetti facilmente serializzabili.
 
 ---
 
 # Requisiti
 
-- Python 3.12+
-- MongoDB Atlas
+Prima di eseguire il progetto è necessario avere installato:
+
+- Python 3.12 o superiore
 - pip
+- Git
+- Un database MongoDB Atlas
 
 ---
 
@@ -69,27 +83,27 @@ git clone <repository-url>
 cd mongo-python-app
 ```
 
-Creare l'ambiente virtuale:
+Creare un ambiente virtuale:
 
 ```bash
 python3 -m venv .venv
 ```
 
-Attivarlo:
+Attivarlo.
 
-Linux/macOS
+Linux/macOS:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Windows
+Windows:
 
 ```bash
 .venv\Scripts\activate
 ```
 
-Installare le dipendenze:
+Installare tutte le dipendenze del progetto:
 
 ```bash
 pip install -r requirements.txt
@@ -97,38 +111,47 @@ pip install -r requirements.txt
 
 ---
 
-# Configurazione
+# Configurazione del file .env
 
-Creare un file `.env` nella cartella principale del progetto inserendo:
+Creare un file `.env` nella cartella principale del progetto.
+
+Inserire al suo interno le variabili d'ambiente necessarie alla connessione con MongoDB Atlas:
 
 ```env
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/
 MONGO_DB_NAME=nome_database
 ```
 
-Le credenziali devono essere quelle del proprio cluster MongoDB Atlas.
+Dove:
+
+- **MONGO_URI** è la stringa di connessione al cluster MongoDB Atlas.
+- **MONGO_DB_NAME** è il nome del database utilizzato dall'applicazione.
+
+Il file `.env` non viene caricato su GitHub poiché contiene informazioni riservate.
 
 ---
 
 # Avvio del server
 
-Avviare l'applicazione con:
+Per avviare il server FastAPI eseguire:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Il server sarà disponibile all'indirizzo:
+Una volta avviato, l'applicazione sarà disponibile all'indirizzo:
 
 ```
 http://127.0.0.1:8000
 ```
 
-La documentazione Swagger sarà disponibile su:
+La documentazione interattiva Swagger sarà disponibile su:
 
 ```
 http://127.0.0.1:8000/docs
 ```
+
+Da questa pagina è possibile visualizzare e testare tutti gli endpoint dell'API.
 
 ---
 
@@ -140,22 +163,44 @@ http://127.0.0.1:8000/docs
 GET /users
 ```
 
+oppure
+
+```bash
+curl http://127.0.0.1:8000/users
+```
+
 ---
 
-## Creare un utente
+## Creare un nuovo utente
 
 ```http
 POST /users
 ```
 
-Payload JSON
+Payload JSON:
 
 ```json
 {
-  "name": "Mario Rossi",
-  "email": "mario.rossi@email.it",
-  "city": "Roma"
+  "name": "Mario",
+  "surname": "Rossi",
+  "email": "mario@email.it",
+  "city": "Roma",
+  "active": true
 }
+```
+
+Con `curl`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/users \
+-H "Content-Type: application/json" \
+-d '{
+  "name":"Mario",
+  "surname":"Rossi",
+  "email":"mario@email.it",
+  "city":"Roma",
+  "active":true
+}'
 ```
 
 ---
@@ -166,15 +211,21 @@ Payload JSON
 GET /courses
 ```
 
+oppure
+
+```bash
+curl http://127.0.0.1:8000/courses
+```
+
 ---
 
-## Creare un corso
+## Creare un nuovo corso
 
 ```http
 POST /courses
 ```
 
-Payload JSON
+Payload JSON:
 
 ```json
 {
@@ -183,6 +234,19 @@ Payload JSON
   "description": "Corso introduttivo a Python",
   "active": true
 }
+```
+
+Con `curl`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/courses \
+-H "Content-Type: application/json" \
+-d '{
+  "title":"Python Base",
+  "category":"Programming",
+  "description":"Corso introduttivo a Python",
+  "active":true
+}'
 ```
 
 ---
@@ -200,8 +264,14 @@ Payload JSON
 
 # Repository Pattern
 
-L'applicazione utilizza il Repository Pattern per separare la logica di accesso al database dalla logica delle API.
+Per evitare di riscrivere le stesse operazioni CRUD per ogni collezione del database, il progetto utilizza il Repository Pattern.
 
-Il `BaseRepository` implementa tutte le operazioni CRUD comuni. Le classi `UserRepository` e `CourseRepository` ereditano tali funzionalità, aggiungendo esclusivamente la logica specifica delle rispettive collezioni.
+Il `BaseRepository` implementa tutte le operazioni generiche come creazione, lettura, modifica ed eliminazione dei documenti. I repository specifici, come `UserRepository` e `CourseRepository`, ereditano questi metodi e aggiungono soltanto le funzionalità dedicate alle rispettive collezioni.
 
-Questa struttura rende il progetto più modulare, facilmente estendibile e riduce la duplicazione del codice.
+Questa soluzione rende il codice più pulito, facilmente manutenibile ed estendibile nel tempo.
+
+---
+
+# Conclusione
+
+Questo progetto rappresenta un esempio di backend sviluppato seguendo buone pratiche di progettazione software. L'utilizzo di FastAPI, MongoDB Atlas e del Repository Pattern permette di mantenere il codice organizzato, modulare e facilmente estendibile, favorendo anche il lavoro collaborativo tra più sviluppatori.
