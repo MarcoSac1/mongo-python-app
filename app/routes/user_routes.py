@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pymongo.errors import DuplicateKeyError
 
-from app.repositories.user_repository import UserRepository 
 from app.models.user_model import UserCreate, UserUpdate
-
+from app.repositories.user_repository import UserRepository
 
 router = APIRouter(
     prefix="/users",

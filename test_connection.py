@@ -1,5 +1,5 @@
-from app.repositories.user_repository import UserRepository
 from app.database import MongoDatabase
+from app.repositories.user_repository import UserRepository
 
 user_repository = UserRepository()
 
