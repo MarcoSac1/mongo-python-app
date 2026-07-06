@@ -2,6 +2,8 @@ from fastapi import FastAPI
 
 from app.database import MongoDatabase
 from app.routes.course_routes import router as course_router
+from app.routes.grade_read_routes import router as grade_read_router
+from app.routes.grade_routes import router as grade_router
 from app.routes.user_routes import router as user_router
 
 app = FastAPI(
@@ -12,6 +14,8 @@ app = FastAPI(
 
 app.include_router(user_router)
 app.include_router(course_router)
+app.include_router(grade_read_router)
+app.include_router(grade_router)
 
 @app.get("/")
 def home():

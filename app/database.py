@@ -9,17 +9,24 @@ class MongoDatabase:
     _database = None
     
     @classmethod
-    def  connect(cls):
+    def connect(cls):
         if cls._client is None:
-            cls._client = MongoClient(
-                settings.MONGO_URI,
-                server_api = ServerApi("1")
-            )
-            
+            if settings.MONGO_URI is None or settings.MONGO_DB_NAME is None:
+                raise ValueError(
+                    "MONGO_URI e MONGO_DB_NAME devono essere impostati nelle variabili d'ambiente"
+                )
+
+            if settings.MONGO_URI.startswith("mongodb+srv://"):
+                cls._client = MongoClient(
+                    settings.MONGO_URI,
+                    server_api=ServerApi("1")
+                )
+            else:
+                cls._client = MongoClient(settings.MONGO_URI)
+
             cls._database = cls._client[settings.MONGO_DB_NAME]
-            
             cls._client.admin.command("ping")
-            print("Connessione a MongoDB Atlas riuscita")
+            print("Connessione a MongoDB riuscita")
             
         return cls._database
     

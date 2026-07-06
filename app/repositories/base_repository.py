@@ -4,8 +4,15 @@ from app.utils.mongo_helpers import serialize_document, serialize_documents, to_
 
 class BaseRepository:
     def __init__(self, collection_name: str):
-        db = MongoDatabase.get_database()
-        self.collection = db[collection_name]
+        self.collection_name = collection_name
+        self._collection = None
+
+    @property
+    def collection(self):
+        if self._collection is None:
+            database = MongoDatabase.get_database()
+            self._collection = database[self.collection_name]
+        return self._collection
 
     def get_all(self, filters: dict = None, limit: int = 100, skip: int = 0, sort: list = None):
         filters = filters or {}
