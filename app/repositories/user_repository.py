@@ -13,3 +13,6 @@ class UserRepository(BaseRepository):
 
     def search_by_city(self, city: str):
         return self.find_many({"city": city})
+    
+    def get_by_role(self, role: str):
+        return self.find_many({"role": role})
