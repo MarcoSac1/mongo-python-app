@@ -12,61 +12,62 @@ env:
 
 jobs:
     quality:
-    name: Quality (lint + test)
-    runs-on: ubuntu-latest
-    services:
-        mongodb:
-        image: mongo:7
-        ports: ["27017:27017"]
-    steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-python@v5
-        with: { python-version: "3.14" }
-        - run: pip install -r requirements.txt pytest httpx ruff
-        - run: ruff check .
-        - run: ruff format --check .
-        - run: pytest -v
-        env:
-            MONGO_URI: mongodb://localhost:27017
-            MONGO_DB_NAME: test_db
+        name: Quality (lint + test)
+        runs-on: ubuntu-latest
+        services:
+            mongodb:
+                image: mongo:7
+                ports: ["27017:27017"]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+                with:
+                    python-version: "3.14"
+            - run: pip install -r requirements.txt pytest httpx ruff
+            - run: ruff check .
+            - run: ruff format --check .
+            - run: pytest -v
+                env:
+                    MONGO_URI: mongodb://localhost:27017
+                    MONGO_DB_NAME: test_db
 
     build:
-    name: Build e push immagine Docker
-    needs: quality
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-        - uses: actions/checkout@v4
-        - name: Login a GHCR
-        uses: docker/login-action@v3
-        with:
-            registry: ${{ env.REGISTRY }}
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-        - name: Build e push
-        run: |
-            docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest .
-            docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        name: Build e push immagine Docker
+        needs: quality
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        steps:
+            - uses: actions/checkout@v4
+            - name: Login a GHCR
+                uses: docker/login-action@v3
+                with:
+                    registry: ${{ env.REGISTRY }}
+                    username: ${{ github.actor }}
+                    password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Build e push
+                run: |
+                    docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest .
+                    docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     deploy:
-    name: Deploy su EC2
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-        - uses: actions/checkout@v4
-        - name: Deploy su EC2 via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-            host: ${{ secrets.EC2_HOST }}
-            username: ${{ secrets.EC2_USER }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            port: ${{ secrets.EC2_PORT }}
-            script: |
-                cd ~/apps/mongo-python-app
-                git pull origin main
-                echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
-                echo "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" >> .env
-                docker compose down
-                docker compose up -d --build
-                docker image prune -f
+        name: Deploy su EC2
+        needs: build
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+        steps:
+            - uses: actions/checkout@v4
+            - name: Deploy su EC2 via SSH
+                uses: appleboy/ssh-action@v1
+                with:
+                    host: ${{ secrets.EC2_HOST }}
+                    username: ${{ secrets.EC2_USER }}
+                    key: ${{ secrets.EC2_SSH_KEY }}
+                    port: ${{ secrets.EC2_PORT }}
+                    script: |
+                        cd ~/apps/mongo-python-app
+                        git pull origin main
+                        echo "MONGO_URI=${{ secrets.MONGO_URI }}" > .env
+                        echo "MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME }}" >> .env
+                        docker compose down
+                        docker compose up -d --build
+                        docker image prune -f
